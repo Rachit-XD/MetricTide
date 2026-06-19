@@ -12,6 +12,7 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 from pgvector.sqlalchemy import Vector
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision: str = "0001_initial_schema"
@@ -27,7 +28,11 @@ def upgrade() -> None:
     op.execute("CREATE EXTENSION IF NOT EXISTS vector")
     op.execute('CREATE EXTENSION IF NOT EXISTS "pgcrypto"')
 
-    platform_enum = sa.Enum("reddit", "hackernews", name="platform_enum")
+    # `create_type=False` keeps create_table from re-emitting CREATE TYPE; we
+    # create the enum explicitly (idempotently) here instead.
+    platform_enum = postgresql.ENUM(
+        "reddit", "hackernews", name="platform_enum", create_type=False
+    )
     platform_enum.create(op.get_bind(), checkfirst=True)
 
     # ---- sources ----
@@ -167,4 +172,6 @@ def downgrade() -> None:
     op.drop_index("ix_sources_created_at", table_name="sources")
     op.drop_table("sources")
 
-    sa.Enum(name="platform_enum").drop(op.get_bind(), checkfirst=True)
+    postgresql.ENUM(name="platform_enum", create_type=False).drop(
+        op.get_bind(), checkfirst=True
+    )

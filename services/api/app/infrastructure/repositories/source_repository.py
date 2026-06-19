@@ -5,10 +5,12 @@ from __future__ import annotations
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.entities.platform import Platform
 from app.domain.entities.source import Source
+from app.domain.exceptions import AlreadyExistsError
 from app.domain.repositories.source_repository import SourceRepository
 from app.infrastructure.db.models.source import SourceModel
 from app.infrastructure.repositories.mappers import source_to_entity, source_to_model
@@ -20,8 +22,17 @@ class SqlAlchemySourceRepository(SourceRepository):
 
     async def add(self, source: Source) -> Source:
         model = source_to_model(source)
-        self._session.add(model)
-        await self._session.flush()
+        # A SAVEPOINT isolates a unique-constraint violation so it rolls back
+        # only this insert, leaving the surrounding transaction (and prior
+        # inserts in the same run) intact.
+        try:
+            async with self._session.begin_nested():
+                self._session.add(model)
+                await self._session.flush()
+        except IntegrityError as exc:
+            raise AlreadyExistsError(
+                f"source ({source.platform.value}, {source.external_id}) already exists"
+            ) from exc
         await self._session.refresh(model)
         return source_to_entity(model)
 

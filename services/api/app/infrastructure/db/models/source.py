@@ -23,7 +23,15 @@ class SourceModel(UUIDMixin, TimestampMixin, Base):
     )
 
     platform: Mapped[Platform] = mapped_column(
-        SAEnum(Platform, name="platform_enum", native_enum=True, validate_strings=True),
+        SAEnum(
+            Platform,
+            name="platform_enum",
+            native_enum=True,
+            validate_strings=True,
+            # Store the enum *value* ("reddit"), not its name ("REDDIT"), to
+            # match the DB enum type created by the migration.
+            values_callable=lambda enum: [member.value for member in enum],
+        ),
         nullable=False,
     )
     external_id: Mapped[str] = mapped_column(String(255), nullable=False)

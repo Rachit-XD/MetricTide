@@ -52,6 +52,23 @@ class Settings(BaseSettings):
     )
     redis_url: str = Field(default="redis://localhost:6379/0")
 
+    # ---- Reddit ingestion ----
+    reddit_base_url: str = Field(default="https://www.reddit.com")
+    reddit_user_agent: str = Field(
+        default="MetricTide/0.1 (+https://github.com/Rachit-XD/MetricTide)"
+    )
+    reddit_fetch_limit: int = Field(default=100, ge=1, le=100)
+    reddit_subreddits: str = Field(
+        default="programming,artificial,MachineLearning,startups"
+    )
+
+    # ---- Hacker News ingestion ----
+    hackernews_base_url: str = Field(default="https://hacker-news.firebaseio.com/v0")
+    hackernews_user_agent: str = Field(
+        default="MetricTide/0.1 (+https://github.com/Rachit-XD/MetricTide)"
+    )
+    hackernews_fetch_limit: int = Field(default=50, ge=1, le=500)
+
     # ---- Kafka (deferred) ----
     kafka_bootstrap_servers: str | None = Field(default=None)
 
@@ -63,6 +80,11 @@ class Settings(BaseSettings):
     def cors_origins(self) -> list[str]:
         """CORS origins as a list (comma-separated in the env var)."""
         return [o.strip() for o in self.api_cors_origins.split(",") if o.strip()]
+
+    @property
+    def reddit_subreddit_list(self) -> list[str]:
+        """Subreddits to ingest (comma-separated in the env var)."""
+        return [s.strip() for s in self.reddit_subreddits.split(",") if s.strip()]
 
 
 @lru_cache
