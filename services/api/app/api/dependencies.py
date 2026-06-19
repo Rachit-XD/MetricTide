@@ -7,6 +7,7 @@ is shared between the repository and the route handler that commits it.
 
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
@@ -14,19 +15,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.ports.hackernews_client import HackerNewsClientPort
 from app.application.ports.reddit_client import RedditClientPort
+from app.application.ports.topic_extraction import TopicExtractionPort
 from app.application.use_cases.ingestion.hackernews import HackerNewsIngestionRunner
 from app.application.use_cases.ingestion.reddit import RedditIngestionRunner
 from app.application.use_cases.ingestion.source_ingestion_service import (
     SourceIngestionService,
 )
+from app.application.use_cases.topics.normalizer import TopicNormalizer
+from app.application.use_cases.topics.topic_extraction_service import (
+    TopicExtractionService,
+)
 from app.core.config import Settings, get_settings
 from app.domain.repositories.source_repository import SourceRepository
+from app.domain.repositories.topic_mention_repository import TopicMentionRepository
+from app.domain.repositories.topic_repository import TopicRepository
 from app.infrastructure.db.session import get_session
 from app.infrastructure.hackernews.http_client import HttpHackerNewsClient
 from app.infrastructure.reddit.http_client import HttpRedditClient
 from app.infrastructure.repositories.source_repository import (
     SqlAlchemySourceRepository,
 )
+from app.infrastructure.repositories.topic_mention_repository import (
+    SqlAlchemyTopicMentionRepository,
+)
+from app.infrastructure.repositories.topic_repository import SqlAlchemyTopicRepository
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
@@ -37,6 +49,22 @@ def get_source_repository(session: SessionDep) -> SourceRepository:
 
 
 SourceRepositoryDep = Annotated[SourceRepository, Depends(get_source_repository)]
+
+
+def get_topic_repository(session: SessionDep) -> TopicRepository:
+    return SqlAlchemyTopicRepository(session)
+
+
+TopicRepositoryDep = Annotated[TopicRepository, Depends(get_topic_repository)]
+
+
+def get_topic_mention_repository(session: SessionDep) -> TopicMentionRepository:
+    return SqlAlchemyTopicMentionRepository(session)
+
+
+TopicMentionRepositoryDep = Annotated[
+    TopicMentionRepository, Depends(get_topic_mention_repository)
+]
 
 
 def get_source_ingestion_service(
@@ -104,4 +132,44 @@ def get_hackernews_ingestion_runner(
 
 HackerNewsIngestionRunnerDep = Annotated[
     HackerNewsIngestionRunner, Depends(get_hackernews_ingestion_runner)
+]
+
+
+# ---- Topic extraction ----
+@lru_cache(maxsize=1)
+def get_topic_extractor() -> TopicExtractionPort:
+    """Process-wide singleton: heavy NLP models load once on first use."""
+    # Imported lazily so the (heavy) ML stack is only required where it is used.
+    from app.infrastructure.nlp.spacy_keybert_extractor import (
+        SpacyKeyBertTopicExtractor,
+    )
+
+    settings = get_settings()
+    return SpacyKeyBertTopicExtractor(
+        spacy_model=settings.spacy_model,
+        embedding_model=settings.embedding_model,
+        top_n=settings.keybert_top_n,
+        ner_confidence=settings.ner_confidence,
+    )
+
+
+def get_topic_extraction_service(
+    source_repository: SourceRepositoryDep,
+    topic_repository: TopicRepositoryDep,
+    mention_repository: TopicMentionRepositoryDep,
+    settings: SettingsDep,
+) -> TopicExtractionService:
+    return TopicExtractionService(
+        extractor=get_topic_extractor(),
+        normalizer=TopicNormalizer(),
+        source_repository=source_repository,
+        topic_repository=topic_repository,
+        mention_repository=mention_repository,
+        min_confidence=settings.topic_min_confidence,
+        source_limit=settings.extract_source_limit,
+    )
+
+
+TopicExtractionServiceDep = Annotated[
+    TopicExtractionService, Depends(get_topic_extraction_service)
 ]

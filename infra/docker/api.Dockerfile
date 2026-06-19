@@ -19,6 +19,12 @@ WORKDIR /app
 COPY services/api/pyproject.toml services/api/uv.lock* ./
 RUN uv sync --no-install-project --no-dev || uv sync --no-dev
 
+# ---- NLP models (baked into the image so first request is fast) ----
+# spaCy English model + the sentence-transformer used by KeyBERT.
+ENV HF_HOME=/opt/models/hf
+RUN python -m spacy download en_core_web_sm \
+    && python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+
 # ---- Application source ----
 COPY services/api/ ./
 

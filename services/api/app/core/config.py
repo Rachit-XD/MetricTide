@@ -69,6 +69,14 @@ class Settings(BaseSettings):
     )
     hackernews_fetch_limit: int = Field(default=50, ge=1, le=500)
 
+    # ---- Topic extraction (local NLP) ----
+    spacy_model: str = Field(default="en_core_web_sm")
+    embedding_model: str = Field(default="all-MiniLM-L6-v2")
+    keybert_top_n: int = Field(default=5, ge=1, le=20)
+    ner_confidence: float = Field(default=0.8, ge=0.0, le=1.0)
+    topic_min_confidence: float = Field(default=0.3, ge=0.0, le=1.0)
+    extract_source_limit: int = Field(default=500, ge=1, le=5000)
+
     # ---- Kafka (deferred) ----
     kafka_bootstrap_servers: str | None = Field(default=None)
 
