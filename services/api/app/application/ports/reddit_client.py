@@ -22,6 +22,8 @@ class RedditPost:
     author: str | None = None
     score: int | None = None
     url: str | None = None
+    # Original post time (Unix epoch seconds), from Reddit's `created_utc`.
+    created_utc: float | None = None
 
 
 class RedditClientPort(ABC):

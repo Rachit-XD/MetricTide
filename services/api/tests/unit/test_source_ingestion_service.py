@@ -162,6 +162,9 @@ async def test_hackernews_runner_maps_and_inserts() -> None:
     assert stored is not None
     assert stored.author == "alice"
     assert stored.platform is Platform.HACKERNEWS
+    # story.time (epoch 1) is preserved as a UTC datetime.
+    assert stored.source_created_at is not None
+    assert stored.source_created_at.year == 1970
 
 
 async def test_hackernews_runner_isolates_listing_failure() -> None:

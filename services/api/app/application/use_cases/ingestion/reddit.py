@@ -12,6 +12,7 @@ from app.application.use_cases.ingestion.source_ingestion_service import (
     SourceIngestionService,
 )
 from app.core.logging import get_logger
+from app.core.timeutils import epoch_to_utc
 from app.domain.entities.platform import Platform
 from app.domain.entities.source import Source
 
@@ -54,4 +55,5 @@ class RedditIngestionRunner:
             author=post.author,
             score=post.score,
             url=post.url,
+            source_created_at=epoch_to_utc(post.created_utc),
         )

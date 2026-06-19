@@ -15,6 +15,7 @@ from app.application.use_cases.ingestion.source_ingestion_service import (
     SourceIngestionService,
 )
 from app.core.logging import get_logger
+from app.core.timeutils import epoch_to_utc
 from app.domain.entities.platform import Platform
 from app.domain.entities.source import Source
 
@@ -43,8 +44,6 @@ class HackerNewsIngestionRunner:
 
     @staticmethod
     def _to_source(story: HackerNewsStory) -> Source:
-        # The Source schema has no origin-timestamp column, so story.time is not
-        # persisted; Source.created_at records ingestion time.
         return Source(
             platform=Platform.HACKERNEWS,
             external_id=str(story.id),
@@ -53,4 +52,5 @@ class HackerNewsIngestionRunner:
             author=story.by,
             score=story.score,
             url=story.url,
+            source_created_at=epoch_to_utc(story.time),
         )

@@ -18,6 +18,7 @@ class SourceCreate(BaseModel):
     author: str | None = Field(default=None, max_length=255)
     score: int | None = None
     url: str | None = None
+    source_created_at: datetime | None = None
 
 
 class SourceRead(BaseModel):
@@ -31,4 +32,5 @@ class SourceRead(BaseModel):
     author: str | None
     score: int | None
     url: str | None
+    source_created_at: datetime | None
     created_at: datetime

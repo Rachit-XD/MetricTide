@@ -26,6 +26,7 @@ def source_to_entity(model: SourceModel) -> Source:
         author=model.author,
         score=model.score,
         url=model.url,
+        source_created_at=model.source_created_at,
         created_at=model.created_at,
     )
 
@@ -39,6 +40,7 @@ def source_to_model(entity: Source) -> SourceModel:
         author=entity.author,
         score=entity.score,
         url=entity.url,
+        source_created_at=entity.source_created_at,
     )
 
 

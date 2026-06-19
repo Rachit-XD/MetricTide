@@ -24,5 +24,8 @@ class Source:
     author: str | None = None
     score: int | None = None
     url: str | None = None
+    # Original publication time at the source (distinct from `created_at`, which
+    # is when we ingested the row). Optional: not every source exposes it.
+    source_created_at: datetime | None = None
     id: UUID | None = None
     created_at: datetime | None = None

@@ -55,4 +55,5 @@ class HttpRedditClient(RedditClientPort):
             author=data.get("author"),
             score=data.get("score"),
             url=url,
+            created_utc=data.get("created_utc"),
         )
