@@ -1,0 +1,30 @@
+# Node
+**/node_modules
+**/.next
+**/out
+**/dist
+**/.turbo
+**/coverage
+
+# Python
+**/__pycache__
+**/.venv
+**/venv
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/*.pyc
+
+# Env & local
+**/.env
+**/.env.*
+!**/.env.example
+.data
+pgdata
+
+# VCS / editors
+.git
+.gitignore
+**/.vscode
+**/.idea
+**/.DS_Store

@@ -1,0 +1,18 @@
+{
+  "name": "metrictide",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Discover emerging technology and startup trends before they go mainstream.",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "web:dev": "pnpm --filter web dev",
+    "web:build": "pnpm --filter web build",
+    "web:test": "pnpm --filter web test",
+    "web:lint": "pnpm --filter web lint",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  }
+}
