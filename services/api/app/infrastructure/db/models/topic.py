@@ -35,12 +35,12 @@ class TopicModel(UUIDMixin, TimestampMixin, Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
 
-    mentions: Mapped[list["TopicMentionModel"]] = relationship(
+    mentions: Mapped[list[TopicMentionModel]] = relationship(
         back_populates="topic",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    snapshots: Mapped[list["TrendSnapshotModel"]] = relationship(
+    snapshots: Mapped[list[TrendSnapshotModel]] = relationship(
         back_populates="topic",
         cascade="all, delete-orphan",
         passive_deletes=True,

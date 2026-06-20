@@ -17,7 +17,6 @@ from app.domain.repositories.source_repository import SourceRepository
 from app.domain.repositories.topic_mention_repository import TopicMentionRepository
 from app.domain.repositories.topic_repository import TopicRepository
 
-
 # ---- Normalizer ----
 
 

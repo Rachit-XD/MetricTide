@@ -17,7 +17,7 @@ from app.infrastructure.repositories.trend_snapshot_repository import (
 
 __all__ = [
     "SqlAlchemySourceRepository",
-    "SqlAlchemyTopicRepository",
     "SqlAlchemyTopicMentionRepository",
+    "SqlAlchemyTopicRepository",
     "SqlAlchemyTrendSnapshotRepository",
 ]

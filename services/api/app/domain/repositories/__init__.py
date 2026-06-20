@@ -11,7 +11,7 @@ from app.domain.repositories.trend_snapshot_repository import TrendSnapshotRepos
 
 __all__ = [
     "SourceRepository",
-    "TopicRepository",
     "TopicMentionRepository",
+    "TopicRepository",
     "TrendSnapshotRepository",
 ]

@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
-
-from fastapi import Query
+from fastapi import APIRouter, Query
 
 from app.api.dependencies import (
     SessionDep,

@@ -5,9 +5,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy import Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.entities.platform import Platform
@@ -46,7 +45,7 @@ class SourceModel(UUIDMixin, TimestampMixin, Base):
         DateTime(timezone=True), nullable=True
     )
 
-    mentions: Mapped[list["TopicMentionModel"]] = relationship(
+    mentions: Mapped[list[TopicMentionModel]] = relationship(
         back_populates="source",
         cascade="all, delete-orphan",
         passive_deletes=True,

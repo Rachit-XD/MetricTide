@@ -5,8 +5,8 @@ from __future__ import annotations
 import uuid
 from datetime import UTC, datetime
 
-from app.domain.entities.source import Source
 from app.domain.entities.platform import Platform
+from app.domain.entities.source import Source
 from app.infrastructure.db.models.source import SourceModel
 from app.infrastructure.repositories.mappers import source_to_entity, source_to_model
 

@@ -11,7 +11,7 @@ from app.infrastructure.db.models.trend_snapshot import TrendSnapshotModel
 
 __all__ = [
     "SourceModel",
-    "TopicModel",
     "TopicMentionModel",
+    "TopicModel",
     "TrendSnapshotModel",
 ]

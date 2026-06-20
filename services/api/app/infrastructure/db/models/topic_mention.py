@@ -6,7 +6,7 @@ import uuid
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Double, ForeignKey, Index, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID as PgUUID
+from sqlalchemy.dialects.postgresql import UUID as PgUUID  # noqa: N811  (class, not a constant)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.db.base import Base, TimestampMixin, UUIDMixin
@@ -36,5 +36,5 @@ class TopicMentionModel(UUIDMixin, TimestampMixin, Base):
     )
     confidence_score: Mapped[float] = mapped_column(Double, nullable=False)
 
-    source: Mapped["SourceModel"] = relationship(back_populates="mentions")
-    topic: Mapped["TopicModel"] = relationship(back_populates="mentions")
+    source: Mapped[SourceModel] = relationship(back_populates="mentions")
+    topic: Mapped[TopicModel] = relationship(back_populates="mentions")

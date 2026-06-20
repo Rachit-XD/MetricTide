@@ -151,9 +151,10 @@ class TopicClusterService:
             if not members:
                 continue
             canonical = self._choose_canonical(members, mention_counts)
-            ordered = [canonical.canonical_name] + sorted(
-                m.canonical_name for m in members if m.id != canonical.id
-            )
+            ordered = [
+                canonical.canonical_name,
+                *sorted(m.canonical_name for m in members if m.id != canonical.id),
+            ]
             clusters.append(ProposedCluster(canonical=canonical.canonical_name, members=ordered))
 
         # Largest, most-duplicated clusters first.

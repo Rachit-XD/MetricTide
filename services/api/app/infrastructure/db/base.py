@@ -16,7 +16,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, func, text
-from sqlalchemy.dialects.postgresql import UUID as PgUUID
+from sqlalchemy.dialects.postgresql import UUID as PgUUID  # noqa: N811  (class, not a constant)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 

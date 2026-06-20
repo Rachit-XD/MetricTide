@@ -7,7 +7,7 @@ from datetime import date
 from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, Double, ForeignKey, Index, Integer, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID as PgUUID
+from sqlalchemy.dialects.postgresql import UUID as PgUUID  # noqa: N811  (class, not a constant)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.db.base import Base, TimestampMixin, UUIDMixin
@@ -35,4 +35,4 @@ class TrendSnapshotModel(UUIDMixin, TimestampMixin, Base):
     growth_rate: Mapped[float] = mapped_column(Double, nullable=False, default=0.0)
     trend_score: Mapped[float] = mapped_column(Double, nullable=False, default=0.0)
 
-    topic: Mapped["TopicModel"] = relationship(back_populates="snapshots")
+    topic: Mapped[TopicModel] = relationship(back_populates="snapshots")
