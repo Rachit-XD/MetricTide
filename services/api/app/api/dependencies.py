@@ -27,10 +27,17 @@ from app.application.use_cases.topics.topic_cluster_service import TopicClusterS
 from app.application.use_cases.topics.topic_extraction_service import (
     TopicExtractionService,
 )
+from app.application.use_cases.trends.trend_score_calculator import (
+    ScoreWeights,
+    TrendScoreCalculator,
+)
+from app.application.use_cases.trends.trend_scoring_service import TrendScoringService
 from app.core.config import Settings, get_settings
 from app.domain.repositories.source_repository import SourceRepository
 from app.domain.repositories.topic_mention_repository import TopicMentionRepository
 from app.domain.repositories.topic_repository import TopicRepository
+from app.domain.repositories.trend_metrics_repository import TrendMetricsRepository
+from app.domain.repositories.trend_snapshot_repository import TrendSnapshotRepository
 from app.infrastructure.db.session import get_session
 from app.infrastructure.hackernews.http_client import HttpHackerNewsClient
 from app.infrastructure.reddit.http_client import HttpRedditClient
@@ -41,6 +48,12 @@ from app.infrastructure.repositories.topic_mention_repository import (
     SqlAlchemyTopicMentionRepository,
 )
 from app.infrastructure.repositories.topic_repository import SqlAlchemyTopicRepository
+from app.infrastructure.repositories.trend_metrics_repository import (
+    SqlAlchemyTrendMetricsRepository,
+)
+from app.infrastructure.repositories.trend_snapshot_repository import (
+    SqlAlchemyTrendSnapshotRepository,
+)
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
@@ -204,4 +217,49 @@ def get_topic_cluster_service(
 
 TopicClusterServiceDep = Annotated[
     TopicClusterService, Depends(get_topic_cluster_service)
+]
+
+
+# ---- Trend scoring ----
+def get_trend_metrics_repository(session: SessionDep) -> TrendMetricsRepository:
+    return SqlAlchemyTrendMetricsRepository(session)
+
+
+TrendMetricsRepositoryDep = Annotated[
+    TrendMetricsRepository, Depends(get_trend_metrics_repository)
+]
+
+
+def get_trend_snapshot_repository(session: SessionDep) -> TrendSnapshotRepository:
+    return SqlAlchemyTrendSnapshotRepository(session)
+
+
+TrendSnapshotRepositoryDep = Annotated[
+    TrendSnapshotRepository, Depends(get_trend_snapshot_repository)
+]
+
+
+def get_trend_scoring_service(
+    metrics_repository: TrendMetricsRepositoryDep,
+    snapshot_repository: TrendSnapshotRepositoryDep,
+    settings: SettingsDep,
+) -> TrendScoringService:
+    calculator = TrendScoreCalculator(
+        ScoreWeights(
+            mentions=settings.trend_weight_mentions,
+            engagement=settings.trend_weight_engagement,
+            diversity=settings.trend_weight_diversity,
+            recency=settings.trend_weight_recency,
+        )
+    )
+    return TrendScoringService(
+        metrics_repository=metrics_repository,
+        snapshot_repository=snapshot_repository,
+        calculator=calculator,
+        recency_half_life_hours=settings.trend_recency_half_life_hours,
+    )
+
+
+TrendScoringServiceDep = Annotated[
+    TrendScoringService, Depends(get_trend_scoring_service)
 ]

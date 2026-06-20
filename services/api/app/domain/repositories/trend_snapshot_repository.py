@@ -27,3 +27,13 @@ class TrendSnapshotRepository(ABC):
         self, snapshot_date: date, limit: int = 20
     ) -> list[TrendSnapshot]:
         """Return the highest-scoring snapshots for a given date."""
+
+    @abstractmethod
+    async def upsert(self, snapshot: TrendSnapshot) -> None:
+        """Insert a snapshot, or update it if one exists for (topic, date)."""
+
+    @abstractmethod
+    async def get_latest_before(
+        self, topic_id: UUID, before_date: date
+    ) -> TrendSnapshot | None:
+        """Return the most recent snapshot for a topic strictly before ``before_date``."""

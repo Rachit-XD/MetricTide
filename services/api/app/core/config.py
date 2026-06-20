@@ -7,20 +7,20 @@ and validated eagerly at startup via pydantic-settings. Import the cached
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from functools import lru_cache
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Environment(str, Enum):
+class Environment(StrEnum):
     DEVELOPMENT = "development"
     STAGING = "staging"
     PRODUCTION = "production"
 
 
-class LogFormat(str, Enum):
+class LogFormat(StrEnum):
     CONSOLE = "console"
     JSON = "json"
 
@@ -80,6 +80,13 @@ class Settings(BaseSettings):
     # ---- Topic clustering (semantic consolidation) ----
     cluster_similarity_threshold: float = Field(default=0.80, ge=0.0, le=1.0)
     cluster_neighbor_limit: int = Field(default=10, ge=1, le=100)
+
+    # ---- Trend scoring ----
+    trend_weight_mentions: float = Field(default=0.40, ge=0.0)
+    trend_weight_engagement: float = Field(default=0.30, ge=0.0)
+    trend_weight_diversity: float = Field(default=0.15, ge=0.0)
+    trend_weight_recency: float = Field(default=0.15, ge=0.0)
+    trend_recency_half_life_hours: float = Field(default=72.0, gt=0.0)
 
     # ---- Kafka (deferred) ----
     kafka_bootstrap_servers: str | None = Field(default=None)
