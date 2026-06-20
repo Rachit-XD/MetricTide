@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import sys
+from typing import cast
 
 import structlog
 
@@ -50,4 +51,6 @@ def configure_logging(settings: Settings) -> None:
 
 def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
     """Return a bound structlog logger."""
-    return structlog.get_logger(name)
+    # structlog.get_logger is typed as returning Any; the configured wrapper
+    # class is a stdlib BoundLogger.
+    return cast(structlog.stdlib.BoundLogger, structlog.get_logger(name))

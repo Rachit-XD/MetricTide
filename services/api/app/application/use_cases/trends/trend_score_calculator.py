@@ -75,4 +75,5 @@ class TrendScoreCalculator:
         age_hours = (ctx.reference_time - latest).total_seconds() / 3600.0
         if age_hours <= 0:
             return 1.0
-        return 0.5 ** (age_hours / ctx.recency_half_life_hours)
+        # `float ** float` is typed as Any in typeshed; make the float explicit.
+        return float(0.5 ** (age_hours / ctx.recency_half_life_hours))

@@ -12,7 +12,7 @@ logged and skipped so the batch still returns the stories that succeeded.
 from __future__ import annotations
 
 import asyncio
-from typing import Any
+from typing import Any, cast
 
 import httpx
 
@@ -51,7 +51,8 @@ class HttpHackerNewsClient(HackerNewsClientPort):
                 async with semaphore:
                     item_response = await client.get(f"{self._base_url}/item/{item_id}.json")
                     item_response.raise_for_status()
-                    return item_response.json()
+                    # httpx's .json() is typed as Any; HN items are JSON objects.
+                    return cast(dict[str, Any], item_response.json())
 
             results = await asyncio.gather(
                 *(fetch_item(i) for i in story_ids), return_exceptions=True

@@ -13,9 +13,10 @@ import asyncio
 from dataclasses import dataclass
 from uuid import UUID
 
-from app.application.ports.topic_extraction import TopicExtractionPort
+from app.application.ports.topic_extraction import ExtractedTopic, TopicExtractionPort
 from app.application.use_cases.topics.normalizer import TopicNormalizer
 from app.core.logging import get_logger
+from app.domain.entities.source import Source
 from app.domain.entities.topic import Topic
 from app.domain.entities.topic_mention import TopicMention
 from app.domain.exceptions import AlreadyExistsError
@@ -98,12 +99,14 @@ class TopicExtractionService:
         )
 
     @staticmethod
-    def _text_for(source) -> str:  # type: ignore[no-untyped-def]
+    def _text_for(source: Source) -> str:
         if source.content:
             return f"{source.title}. {source.content}"
         return source.title
 
-    def _normalized_candidates(self, extracted) -> dict[str, float]:  # type: ignore[no-untyped-def]
+    def _normalized_candidates(
+        self, extracted: list[ExtractedTopic]
+    ) -> dict[str, float]:
         """Normalize and merge candidates by canonical name, keeping the max confidence."""
         best: dict[str, float] = {}
         for candidate in extracted:
