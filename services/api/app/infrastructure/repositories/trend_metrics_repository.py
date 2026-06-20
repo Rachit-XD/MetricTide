@@ -36,6 +36,7 @@ class SqlAlchemyTrendMetricsRepository(TrendMetricsRepository):
             )
             .join(TopicMentionModel, TopicMentionModel.topic_id == TopicModel.id)
             .join(SourceModel, SourceModel.id == TopicMentionModel.source_id)
+            .where(TopicModel.is_active.is_(True))
             .group_by(TopicModel.id, TopicModel.canonical_name)
         )
         rows = (await self._session.execute(stmt)).all()
@@ -67,7 +68,10 @@ class SqlAlchemyTrendMetricsRepository(TrendMetricsRepository):
                 TrendSnapshotModel.snapshot_date,
             )
             .join(TopicModel, TopicModel.id == TrendSnapshotModel.topic_id)
-            .where(TrendSnapshotModel.snapshot_date == latest_date)
+            .where(
+                TrendSnapshotModel.snapshot_date == latest_date,
+                TopicModel.is_active.is_(True),
+            )
             .order_by(TrendSnapshotModel.trend_score.desc())
             .limit(limit)
         )

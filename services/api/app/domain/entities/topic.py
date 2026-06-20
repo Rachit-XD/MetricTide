@@ -18,5 +18,9 @@ class Topic:
     canonical_name: str
     description: str | None = None
     embedding: list[float] | None = field(default=None, repr=False)
+    # Consolidation state: merged topics are marked inactive and point at the
+    # canonical topic they were merged into (audit trail).
+    is_active: bool = True
+    merged_into_id: UUID | None = None
     id: UUID | None = None
     created_at: datetime | None = None

@@ -50,6 +50,8 @@ def topic_to_entity(model: TopicModel) -> Topic:
         canonical_name=model.canonical_name,
         description=model.description,
         embedding=list(model.embedding) if model.embedding is not None else None,
+        is_active=model.is_active,
+        merged_into_id=model.merged_into_id,
         created_at=model.created_at,
     )
 
@@ -59,6 +61,8 @@ def topic_to_model(entity: Topic) -> TopicModel:
         canonical_name=entity.canonical_name,
         description=entity.description,
         embedding=entity.embedding,
+        is_active=entity.is_active,
+        merged_into_id=entity.merged_into_id,
     )
 
 

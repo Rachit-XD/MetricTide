@@ -22,6 +22,9 @@ from app.application.use_cases.ingestion.reddit import RedditIngestionRunner
 from app.application.use_cases.ingestion.source_ingestion_service import (
     SourceIngestionService,
 )
+from app.application.use_cases.topics.canonical_topic_service import (
+    CanonicalTopicService,
+)
 from app.application.use_cases.topics.normalizer import TopicNormalizer
 from app.application.use_cases.topics.topic_cluster_service import TopicClusterService
 from app.application.use_cases.topics.topic_extraction_service import (
@@ -35,6 +38,7 @@ from app.application.use_cases.trends.trend_scoring_service import TrendScoringS
 from app.core.config import Settings, get_settings
 from app.domain.repositories.source_repository import SourceRepository
 from app.domain.repositories.topic_mention_repository import TopicMentionRepository
+from app.domain.repositories.topic_merge_repository import TopicMergeRepository
 from app.domain.repositories.topic_repository import TopicRepository
 from app.domain.repositories.trend_metrics_repository import TrendMetricsRepository
 from app.domain.repositories.trend_snapshot_repository import TrendSnapshotRepository
@@ -46,6 +50,9 @@ from app.infrastructure.repositories.source_repository import (
 )
 from app.infrastructure.repositories.topic_mention_repository import (
     SqlAlchemyTopicMentionRepository,
+)
+from app.infrastructure.repositories.topic_merge_repository import (
+    SqlAlchemyTopicMergeRepository,
 )
 from app.infrastructure.repositories.topic_repository import SqlAlchemyTopicRepository
 from app.infrastructure.repositories.trend_metrics_repository import (
@@ -217,6 +224,36 @@ def get_topic_cluster_service(
 
 TopicClusterServiceDep = Annotated[
     TopicClusterService, Depends(get_topic_cluster_service)
+]
+
+
+# ---- Canonical topic consolidation (Phase 8) ----
+def get_topic_merge_repository(session: SessionDep) -> TopicMergeRepository:
+    return SqlAlchemyTopicMergeRepository(session)
+
+
+TopicMergeRepositoryDep = Annotated[
+    TopicMergeRepository, Depends(get_topic_merge_repository)
+]
+
+
+def get_canonical_topic_service(
+    topic_repository: TopicRepositoryDep,
+    mention_repository: TopicMentionRepositoryDep,
+    merge_repository: TopicMergeRepositoryDep,
+    settings: SettingsDep,
+) -> CanonicalTopicService:
+    return CanonicalTopicService(
+        topic_repository=topic_repository,
+        mention_repository=mention_repository,
+        merge_repository=merge_repository,
+        similarity_threshold=settings.merge_similarity_threshold,
+        neighbor_limit=settings.cluster_neighbor_limit,
+    )
+
+
+CanonicalTopicServiceDep = Annotated[
+    CanonicalTopicService, Depends(get_canonical_topic_service)
 ]
 
 

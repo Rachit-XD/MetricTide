@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import uuid
 from typing import TYPE_CHECKING
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Index, String, Text
+from sqlalchemy import Boolean, ForeignKey, Index, String, Text
+from sqlalchemy.dialects.postgresql import UUID as PgUUID  # noqa: N811  (class, not a constant)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.infrastructure.db.base import Base, TimestampMixin, UUIDMixin
@@ -34,6 +36,14 @@ class TopicModel(UUIDMixin, TimestampMixin, Base):
     canonical_name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default="true", default=True
+    )
+    merged_into_id: Mapped[uuid.UUID | None] = mapped_column(
+        PgUUID(as_uuid=True),
+        ForeignKey("topics.id", ondelete="SET NULL"),
+        nullable=True,
+    )
 
     mentions: Mapped[list[TopicMentionModel]] = relationship(
         back_populates="topic",

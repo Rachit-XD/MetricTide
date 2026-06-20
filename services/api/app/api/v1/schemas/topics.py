@@ -31,3 +31,37 @@ class TopicClusterResponse(BaseModel):
     clusters: list[ProposedClusterSchema] = Field(
         description="Example proposed clusters (no merges performed)."
     )
+
+
+# ---- Canonical consolidation (Phase 8) ----
+
+
+class MergeMemberSchema(BaseModel):
+    name: str
+    mention_count: int
+    similarity: float
+
+
+class MergeClusterSchema(BaseModel):
+    canonical: str
+    canonical_mentions: int
+    min_similarity: float
+    members: list[MergeMemberSchema]
+
+
+class TopicClustersResponse(BaseModel):
+    """Candidate clusters for review (read-only)."""
+
+    cluster_count: int
+    clusters: list[MergeClusterSchema]
+
+
+class MergeReportResponse(BaseModel):
+    """Outcome of a merge preview (dry-run) or apply."""
+
+    mode: str = Field(description='"preview" (no writes) or "apply".')
+    cluster_count: int
+    topics_merged: int = Field(description="Topics that would be / were merged away.")
+    mentions_repointed: int = Field(description="Mentions moved to canonical (apply only).")
+    mentions_deduped: int = Field(description="Duplicate mentions dropped (apply only).")
+    clusters: list[MergeClusterSchema]

@@ -69,7 +69,7 @@ class SqlAlchemyTopicRepository(TopicRepository):
     async def list_missing_embeddings(self, limit: int = 1000) -> list[Topic]:
         stmt = (
             select(TopicModel)
-            .where(TopicModel.embedding.is_(None))
+            .where(TopicModel.embedding.is_(None), TopicModel.is_active.is_(True))
             .order_by(TopicModel.created_at)
             .limit(limit)
         )
@@ -79,7 +79,7 @@ class SqlAlchemyTopicRepository(TopicRepository):
     async def list_with_embeddings(self, limit: int = 5000) -> list[Topic]:
         stmt = (
             select(TopicModel)
-            .where(TopicModel.embedding.is_not(None))
+            .where(TopicModel.embedding.is_not(None), TopicModel.is_active.is_(True))
             .order_by(TopicModel.canonical_name)
             .limit(limit)
         )
@@ -105,6 +105,7 @@ class SqlAlchemyTopicRepository(TopicRepository):
             select(TopicModel, distance)
             .where(
                 TopicModel.embedding.is_not(None),
+                TopicModel.is_active.is_(True),
                 TopicModel.id != exclude_id,
             )
             .order_by(distance)

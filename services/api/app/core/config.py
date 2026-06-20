@@ -80,6 +80,8 @@ class Settings(BaseSettings):
     # ---- Topic clustering (semantic consolidation) ----
     cluster_similarity_threshold: float = Field(default=0.80, ge=0.0, le=1.0)
     cluster_neighbor_limit: int = Field(default=10, ge=1, le=100)
+    # Stricter threshold used when actually merging topics (Phase 8).
+    merge_similarity_threshold: float = Field(default=0.90, ge=0.0, le=1.0)
 
     # ---- Trend scoring ----
     trend_weight_mentions: float = Field(default=0.40, ge=0.0)
