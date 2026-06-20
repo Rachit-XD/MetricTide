@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,3 +55,64 @@ class SqlAlchemyTopicRepository(TopicRepository):
         )
         models = (await self._session.execute(stmt)).scalars().all()
         return [topic_to_entity(m) for m in models]
+
+    async def list_all(self, limit: int = 1000, offset: int = 0) -> list[Topic]:
+        stmt = (
+            select(TopicModel)
+            .order_by(TopicModel.canonical_name)
+            .limit(limit)
+            .offset(offset)
+        )
+        models = (await self._session.execute(stmt)).scalars().all()
+        return [topic_to_entity(m) for m in models]
+
+    async def list_missing_embeddings(self, limit: int = 1000) -> list[Topic]:
+        stmt = (
+            select(TopicModel)
+            .where(TopicModel.embedding.is_(None))
+            .order_by(TopicModel.created_at)
+            .limit(limit)
+        )
+        models = (await self._session.execute(stmt)).scalars().all()
+        return [topic_to_entity(m) for m in models]
+
+    async def list_with_embeddings(self, limit: int = 5000) -> list[Topic]:
+        stmt = (
+            select(TopicModel)
+            .where(TopicModel.embedding.is_not(None))
+            .order_by(TopicModel.canonical_name)
+            .limit(limit)
+        )
+        models = (await self._session.execute(stmt)).scalars().all()
+        return [topic_to_entity(m) for m in models]
+
+    async def update_embedding(self, topic_id: UUID, embedding: list[float]) -> None:
+        await self._session.execute(
+            update(TopicModel)
+            .where(TopicModel.id == topic_id)
+            .values(embedding=embedding)
+        )
+
+    async def find_neighbors(
+        self,
+        embedding: list[float],
+        exclude_id: UUID,
+        max_distance: float,
+        limit: int = 10,
+    ) -> list[tuple[Topic, float]]:
+        distance = TopicModel.embedding.cosine_distance(embedding).label("distance")
+        stmt = (
+            select(TopicModel, distance)
+            .where(
+                TopicModel.embedding.is_not(None),
+                TopicModel.id != exclude_id,
+            )
+            .order_by(distance)
+            .limit(limit)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return [
+            (topic_to_entity(model), float(dist))
+            for model, dist in rows
+            if dist is not None and float(dist) <= max_distance
+        ]

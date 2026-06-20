@@ -77,6 +77,10 @@ class Settings(BaseSettings):
     topic_min_confidence: float = Field(default=0.3, ge=0.0, le=1.0)
     extract_source_limit: int = Field(default=500, ge=1, le=5000)
 
+    # ---- Topic clustering (semantic consolidation) ----
+    cluster_similarity_threshold: float = Field(default=0.80, ge=0.0, le=1.0)
+    cluster_neighbor_limit: int = Field(default=10, ge=1, le=100)
+
     # ---- Kafka (deferred) ----
     kafka_bootstrap_servers: str | None = Field(default=None)
 

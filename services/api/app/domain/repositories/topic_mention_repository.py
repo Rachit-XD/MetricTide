@@ -24,3 +24,7 @@ class TopicMentionRepository(ABC):
     @abstractmethod
     async def list_for_source(self, source_id: UUID) -> list[TopicMention]:
         """Return mentions for a given source."""
+
+    @abstractmethod
+    async def count_by_topic(self) -> dict[UUID, int]:
+        """Return a mapping of topic_id -> number of mentions."""

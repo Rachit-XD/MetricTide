@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,3 +55,10 @@ class SqlAlchemyTopicMentionRepository(TopicMentionRepository):
         )
         models = (await self._session.execute(stmt)).scalars().all()
         return [topic_mention_to_entity(m) for m in models]
+
+    async def count_by_topic(self) -> dict[UUID, int]:
+        stmt = select(
+            TopicMentionModel.topic_id, func.count()
+        ).group_by(TopicMentionModel.topic_id)
+        rows = (await self._session.execute(stmt)).all()
+        return {topic_id: int(count) for topic_id, count in rows}

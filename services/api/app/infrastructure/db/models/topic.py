@@ -14,8 +14,8 @@ if TYPE_CHECKING:
     from app.infrastructure.db.models.topic_mention import TopicMentionModel
     from app.infrastructure.db.models.trend_snapshot import TrendSnapshotModel
 
-# Dimensionality of topic embeddings (OpenAI text-embedding-3-small).
-EMBEDDING_DIM = 1536
+# Dimensionality of topic embeddings (sentence-transformers all-MiniLM-L6-v2).
+EMBEDDING_DIM = 384
 
 
 class TopicModel(UUIDMixin, TimestampMixin, Base):

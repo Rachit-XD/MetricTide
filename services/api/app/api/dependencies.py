@@ -13,6 +13,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.application.ports.embedding import EmbeddingPort
 from app.application.ports.hackernews_client import HackerNewsClientPort
 from app.application.ports.reddit_client import RedditClientPort
 from app.application.ports.topic_extraction import TopicExtractionPort
@@ -22,6 +23,7 @@ from app.application.use_cases.ingestion.source_ingestion_service import (
     SourceIngestionService,
 )
 from app.application.use_cases.topics.normalizer import TopicNormalizer
+from app.application.use_cases.topics.topic_cluster_service import TopicClusterService
 from app.application.use_cases.topics.topic_extraction_service import (
     TopicExtractionService,
 )
@@ -172,4 +174,34 @@ def get_topic_extraction_service(
 
 TopicExtractionServiceDep = Annotated[
     TopicExtractionService, Depends(get_topic_extraction_service)
+]
+
+
+# ---- Topic clustering ----
+@lru_cache(maxsize=1)
+def get_embedder() -> EmbeddingPort:
+    """Process-wide singleton: the embedding model loads once on first use."""
+    from app.infrastructure.nlp.sentence_transformer_embedder import (
+        SentenceTransformerEmbedder,
+    )
+
+    return SentenceTransformerEmbedder(model_name=get_settings().embedding_model)
+
+
+def get_topic_cluster_service(
+    topic_repository: TopicRepositoryDep,
+    mention_repository: TopicMentionRepositoryDep,
+    settings: SettingsDep,
+) -> TopicClusterService:
+    return TopicClusterService(
+        embedder=get_embedder(),
+        topic_repository=topic_repository,
+        mention_repository=mention_repository,
+        similarity_threshold=settings.cluster_similarity_threshold,
+        neighbor_limit=settings.cluster_neighbor_limit,
+    )
+
+
+TopicClusterServiceDep = Annotated[
+    TopicClusterService, Depends(get_topic_cluster_service)
 ]

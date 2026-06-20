@@ -28,3 +28,29 @@ class TopicRepository(ABC):
         self, embedding: list[float], limit: int = 10
     ) -> list[Topic]:
         """Return topics nearest to ``embedding`` by cosine distance (pgvector)."""
+
+    @abstractmethod
+    async def list_all(self, limit: int = 1000, offset: int = 0) -> list[Topic]:
+        """Return topics ordered by canonical name."""
+
+    @abstractmethod
+    async def list_missing_embeddings(self, limit: int = 1000) -> list[Topic]:
+        """Return topics that have no embedding yet."""
+
+    @abstractmethod
+    async def list_with_embeddings(self, limit: int = 5000) -> list[Topic]:
+        """Return topics that have an embedding."""
+
+    @abstractmethod
+    async def update_embedding(self, topic_id: UUID, embedding: list[float]) -> None:
+        """Persist the embedding for a topic."""
+
+    @abstractmethod
+    async def find_neighbors(
+        self,
+        embedding: list[float],
+        exclude_id: UUID,
+        max_distance: float,
+        limit: int = 10,
+    ) -> list[tuple[Topic, float]]:
+        """Return (topic, cosine_distance) within ``max_distance``, excluding ``exclude_id``."""

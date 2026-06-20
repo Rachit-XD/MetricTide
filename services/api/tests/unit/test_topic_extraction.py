@@ -85,6 +85,26 @@ class FakeTopicRepository(TopicRepository):
     async def search_similar(self, embedding, limit: int = 10):  # type: ignore[no-untyped-def]
         return []
 
+    async def list_all(self, limit: int = 1000, offset: int = 0):  # type: ignore[no-untyped-def]
+        return list(self._by_name.values())[offset : offset + limit]
+
+    async def list_missing_embeddings(self, limit: int = 1000):  # type: ignore[no-untyped-def]
+        return [t for t in self._by_name.values() if t.embedding is None][:limit]
+
+    async def list_with_embeddings(self, limit: int = 5000):  # type: ignore[no-untyped-def]
+        return [t for t in self._by_name.values() if t.embedding is not None][:limit]
+
+    async def update_embedding(self, topic_id, embedding):  # type: ignore[no-untyped-def]
+        from dataclasses import replace
+
+        for name, topic in self._by_name.items():
+            if topic.id == topic_id:
+                self._by_name[name] = replace(topic, embedding=embedding)
+                return
+
+    async def find_neighbors(self, embedding, exclude_id, max_distance, limit: int = 10):  # type: ignore[no-untyped-def]
+        return []
+
 
 class FakeMentionRepository(TopicMentionRepository):
     def __init__(self) -> None:
@@ -102,6 +122,12 @@ class FakeMentionRepository(TopicMentionRepository):
 
     async def list_for_source(self, source_id):  # type: ignore[no-untyped-def]
         return [m for m in self.items if m.source_id == source_id]
+
+    async def count_by_topic(self):  # type: ignore[no-untyped-def]
+        counts: dict = {}
+        for m in self.items:
+            counts[m.topic_id] = counts.get(m.topic_id, 0) + 1
+        return counts
 
 
 def _source(external_id: str, title: str) -> Source:
